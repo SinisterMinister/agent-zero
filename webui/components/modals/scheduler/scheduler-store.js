@@ -1031,6 +1031,7 @@ const schedulerStoreModel = {
     this.isCreating = true;
     this.isEditing = false;
     await this.refreshProjectOptions();
+    await this.fetchModelPresets();
 
     let initialProject = this.deriveActiveProject();
     if (!initialProject && this.projectOptions.length > 0) {
@@ -1046,6 +1047,7 @@ const schedulerStoreModel = {
   },
 
   async startEditTask(taskId) {
+    await this.fetchModelPresets();
     const task = this.tasks.find((t) => t.uuid === taskId);
     if (!task) {
       this.notifyError("Task not found");
