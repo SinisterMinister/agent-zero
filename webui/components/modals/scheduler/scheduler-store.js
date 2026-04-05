@@ -220,6 +220,7 @@ function composeEditingTask(task = {}) {
     dedicated_context:
       typeof base.dedicated_context === "boolean" ? base.dedicated_context : true,
     state: base.state || DEFAULT_TASK_STATE,
+    model: base.model || "",
   };
 }
 

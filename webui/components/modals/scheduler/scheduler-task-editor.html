@@ -200,9 +200,9 @@
                             <div class="scheduler-form-help">Override the AI model for this task (leave empty to use global default)</div>
                         </div>
                         <select x-model="$store.schedulerStore.editingTask.model">
-                            <option value="">— Global default —</option>
+                            <option value="" :selected="!$store.schedulerStore.editingTask.model">— Global default —</option>
                             <template x-for="preset in $store.schedulerStore.modelPresets" :key="preset.name">
-                                <option :value="preset.name" x-text="preset.name"></option>
+                                <option :value="preset.name" :selected="$store.schedulerStore.editingTask.model === preset.name" x-text="preset.name"></option>
                             </template>
                         </select>
                     </div>
@@ -418,9 +418,9 @@
                             <div class="scheduler-form-help">Override the AI model for this task (leave empty to use global default)</div>
                         </div>
                         <select x-model="$store.schedulerStore.editingTask.model">
-                            <option value="">— Global default —</option>
+                            <option value="" :selected="!$store.schedulerStore.editingTask.model">— Global default —</option>
                             <template x-for="preset in $store.schedulerStore.modelPresets" :key="preset.name">
-                                <option :value="preset.name" x-text="preset.name"></option>
+                                <option :value="preset.name" :selected="$store.schedulerStore.editingTask.model === preset.name" x-text="preset.name"></option>
                             </template>
                         </select>
                     </div>
