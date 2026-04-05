@@ -28,6 +28,7 @@ class SchedulerTaskCreate(ApiHandler):
         system_prompt = input.get("system_prompt", "")
         prompt = input.get("prompt")
         attachments = input.get("attachments", [])
+        model: str | None = input.get("model") or None  # preset name, e.g. 'Haiku'
 
         requested_project_slug = input.get("project_name")
         if isinstance(requested_project_slug, str):
@@ -136,6 +137,10 @@ class SchedulerTaskCreate(ApiHandler):
             # Verify token after creation
             if isinstance(task, AdHocTask):
                 printer.print(f"AdHocTask created with token: '{task.token}'")
+
+        # Apply per-task model preset override
+        if model:
+            task.model = model
 
         # Add the task to the scheduler
         await scheduler.add_task(task)
