@@ -154,6 +154,7 @@ class SchedulerTool(Tool):
         attachments: list[str] = kwargs.get("attachments", [])
         schedule: dict[str, str] = kwargs.get("schedule", {})
         dedicated_context: bool = kwargs.get("dedicated_context", False)
+        model: str | None = kwargs.get("model") or None
 
         task_schedule = TaskSchedule(
             minute=schedule.get("minute", "*"),
@@ -180,6 +181,8 @@ class SchedulerTool(Tool):
             project_name=project_slug,
             project_color=project_color,
         )
+        if model:
+            task.model = model
         await TaskScheduler.get().add_task(task)
         return Response(message=f"Scheduled task '{name}' created: {task.uuid}", break_loop=False)
 
@@ -190,6 +193,7 @@ class SchedulerTool(Tool):
         attachments: list[str] = kwargs.get("attachments", [])
         token: str = str(random.randint(1000000000000000000, 9999999999999999999))
         dedicated_context: bool = kwargs.get("dedicated_context", False)
+        model: str | None = kwargs.get("model") or None
 
         project_slug, project_color = self._resolve_project_metadata()
 
@@ -203,8 +207,11 @@ class SchedulerTool(Tool):
             project_name=project_slug,
             project_color=project_color,
         )
+        if model:
+            task.model = model
         await TaskScheduler.get().add_task(task)
         return Response(message=f"Adhoc task '{name}' created: {task.uuid}", break_loop=False)
+
 
     async def create_planned_task(self, **kwargs) -> Response:
         name: str = kwargs.get("name", "")
@@ -213,6 +220,7 @@ class SchedulerTool(Tool):
         attachments: list[str] = kwargs.get("attachments", [])
         plan: list[str] = kwargs.get("plan", [])
         dedicated_context: bool = kwargs.get("dedicated_context", False)
+        model: str | None = kwargs.get("model") or None
 
         # Convert plan to list of datetimes in UTC
         todo: list[datetime] = []
@@ -242,6 +250,8 @@ class SchedulerTool(Tool):
             project_name=project_slug,
             project_color=project_color
         )
+        if model:
+            task.model = model
         await TaskScheduler.get().add_task(task)
         return Response(message=f"Planned task '{name}' created: {task.uuid}", break_loop=False)
 

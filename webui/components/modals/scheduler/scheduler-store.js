@@ -105,9 +105,9 @@ const defaultEditingTask = (overrides = {}) => ({
   attachments: [],
   project: null,
   dedicated_context: true,
+  model: "",
   ...overrides,
 });
-
 const readPersistedViewMode = () => {
   if (typeof window === "undefined") return "list";
   return window.localStorage?.getItem(VIEW_MODE_STORAGE_KEY) || "list";
@@ -237,8 +237,8 @@ function buildPayloadFromEditingTask(editingTask, { isCreating = false } = {}) {
     timezone: getUserTimezone(),
     attachments: normalizeAttachments(editingTask.attachments),
     dedicated_context: editingTask.dedicated_context,
+    model: editingTask.model || null,
   };
-
   if (editingTask.type === "scheduled") {
     payload.schedule = normalizeSchedule(editingTask.schedule);
   }
@@ -468,11 +468,13 @@ const schedulerStoreModel = {
   pageSize: 10,
 
   // Editor state -------------------------------------------------------------
+  // Editor state -------------------------------------------------------------
   isCreating: false,
   isEditing: false,
   editingTask: defaultEditingTask(),
   selectedProjectSlug: "",
   projectOptions: [],
+  modelPresets: [],
 
   // Polling ------------------------------------------------------------------
   pollingInterval: null,
@@ -534,8 +536,8 @@ const schedulerStoreModel = {
   init() {
     this.resetEditingTask();
     this.refreshProjectOptions();
+    this.fetchModelPresets();
   },
-
   persistViewMode(mode) {
     this.viewMode = mode;
     try {
@@ -782,6 +784,22 @@ const schedulerStoreModel = {
       title: proj.title || proj.name,
       color: proj.color || "",
     }));
+  },
+
+  async fetchModelPresets() {
+    try {
+      const response = await fetchApi("/model_presets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "get" }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (data.ok && Array.isArray(data.presets)) {
+        this.modelPresets = data.presets;
+      }
+    } catch (error) {
+      console.warn("[scheduler] Failed to load model presets", error);
+    }
   },
 
   deriveActiveProject() {

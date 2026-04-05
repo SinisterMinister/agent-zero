@@ -127,6 +127,7 @@ class BaseTask(BaseModel):
     attachments: list[str] = Field(default_factory=list)
     project_name: str | None = Field(default=None)
     project_color: str | None = Field(default=None)
+    model: str | None = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_run: datetime | None = None
@@ -147,6 +148,7 @@ class BaseTask(BaseModel):
                last_run: datetime | None = None,
                last_result: str | None = None,
                context_id: str | None = None,
+               model: str | None = ...,  # type: ignore[assignment]
                **kwargs):
         with self._lock:
             if name is not None:
@@ -172,6 +174,9 @@ class BaseTask(BaseModel):
                 self.updated_at = datetime.now(timezone.utc)
             if context_id is not None:
                 self.context_id = context_id
+                self.updated_at = datetime.now(timezone.utc)
+            if model is not ...:  # Ellipsis sentinel means "not provided"
+                self.model = model or None  # treat empty string as None
                 self.updated_at = datetime.now(timezone.utc)
             for key, value in kwargs.items():
                 if value is not None:
@@ -902,6 +907,11 @@ class TaskScheduler:
                 # This ensures the task context is saved and can be found by polling
                 await self._persist_chat(current_task, context)
 
+                # Apply per-task model override if set
+                if current_task.model:
+                    context.set_data('chat_model_override', {'preset_name': current_task.model})
+                    PrintStyle.info(f"Scheduler Task '{current_task.name}' using model preset: {current_task.model}")
+
                 result = await agent.monologue()
 
                 # Success
@@ -1137,6 +1147,7 @@ def serialize_task(task: Union[ScheduledTask, AdHocTask, PlannedTask]) -> Dict[s
         "last_result": task.last_result,
         "context_id": task.context_id,
         "dedicated_context": task.is_dedicated(),
+        "model": task.model,
         "project": {
             "name": task.project_name,
             "color": task.project_color,
@@ -1207,6 +1218,7 @@ def deserialize_task(task_data: Dict[str, Any], task_class: Optional[Type[T]] = 
         "last_run": parse_datetime(task_data.get("last_run")),
         "last_result": task_data.get("last_result"),
         "context_id": task_data.get("context_id"),
+        "model": task_data.get("model") or None,
     }
 
     # Add type-specific fields
