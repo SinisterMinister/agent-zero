@@ -789,7 +789,7 @@ const schedulerStoreModel = {
 
   async fetchModelPresets() {
     try {
-      const response = await fetchApi("/model_presets", {
+      const response = await fetchApi("/plugins/_model_config/model_presets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "get" }),
